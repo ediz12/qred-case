@@ -14,10 +14,9 @@ public class OfferRequestMapper {
     private static final int MAX_AMOUNT = 250000;
     private static final int EXPIRES_AFTER_DAYS_AMOUNT = 7;
 
-    public Offer map(OfferCreateRequest offerRequest, Application application) {
+    public Offer map(OfferCreateRequest offerRequest) {
         final int amount = offerRequest.getAmount();
         final Offer offer = new Offer.Builder()
-                .application(application)
                 .amount(amount)
                 .term(offerRequest.getTerm())
                 .interest(getInterestRate(amount))
@@ -48,7 +47,7 @@ public class OfferRequestMapper {
         offer.setInterest(getInterestRate(newAmount));
         offer.setTotalCommission(newAmount + offer.getInterest());
         offer.setTotalAmount(newAmount + offer.getTotalCommission());
-        offer.setExpirationDate(new DateTime());
+        offer.setExpirationDate(new DateTime().plusDays(EXPIRES_AFTER_DAYS_AMOUNT));
         offer.setOfferStatus(OfferStatus.PENDING);
         return offer;
     }

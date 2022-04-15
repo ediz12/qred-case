@@ -48,6 +48,10 @@ public class ApplicationService {
     }
 
     public void cancelApplications(List<Long> expiredApplicationIds) {
+        if (expiredApplicationIds.isEmpty()) {
+            return;
+        }
+
         final List<Application> applications = applicationRepository.findAllInApplicationIds(expiredApplicationIds);
         for (Application application : applications) {
             application.setStatus(ApplicationStatus.CANCELLED);
@@ -55,7 +59,7 @@ public class ApplicationService {
         }
     }
 
-    public Optional<Long> cancelLatestApplication(String userId) {
+    public Optional<Application> cancelLatestApplication(String userId) {
         final Optional<Application> optionalApplication = applicationRepository.findByUserIdAndStatusIn(userId, Lists.newArrayList(ApplicationStatus.PENDING, ApplicationStatus.PROCESSED));
         if (!optionalApplication.isPresent()) {
             return Optional.empty();
@@ -64,7 +68,7 @@ public class ApplicationService {
         final Application application = optionalApplication.get();
         application.setStatus(ApplicationStatus.CANCELLED);
         applicationRepository.save(application);
-        return Optional.of(application.getId());
+        return Optional.of(application);
     }
 
     public ApplicationPair signLatestApplication(String userId) {

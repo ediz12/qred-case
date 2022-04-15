@@ -39,6 +39,7 @@ public class ApplicationFullResponse {
         this.email = builder.email;
         this.phoneNumber = builder.phoneNumber;
         this.organization = builder.organization;
+        this.offer = builder.offer;
         this.status = builder.status;
         this.appliedDate = builder.appliedDate;
     }
@@ -50,6 +51,7 @@ public class ApplicationFullResponse {
         private String email;
         private String phoneNumber;
         private OrganizationResponse organization;
+        private OfferFullResponse offer;
         private ApplicationStatus status;
         private DateTime appliedDate;
 
@@ -75,6 +77,11 @@ public class ApplicationFullResponse {
 
         public Builder organization(OrganizationResponse organization) {
             this.organization = organization;
+            return this;
+        }
+
+        public Builder offer(OfferFullResponse offer) {
+            this.offer = offer;
             return this;
         }
 

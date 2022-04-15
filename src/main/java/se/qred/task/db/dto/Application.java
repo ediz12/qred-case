@@ -50,7 +50,8 @@ public class Application implements Serializable {
     @Column(name = "applied_date")
     private DateTime appliedDate;
 
-    @OneToOne(mappedBy = "application")
+    @OneToOne()
+    @JoinColumn(name = "offer_id", referencedColumnName = "id")
     private Offer offer;
 
     public Application() {

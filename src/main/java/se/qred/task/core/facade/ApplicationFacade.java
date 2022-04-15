@@ -10,9 +10,12 @@ import se.qred.task.core.model.OrganizationPair;
 import se.qred.task.core.service.ApplicationService;
 import se.qred.task.core.service.OfferService;
 import se.qred.task.core.service.OrganizationService;
+import se.qred.task.db.dto.Application;
+import se.qred.task.db.dto.Offer;
 import se.qred.task.db.dto.User;
 
 import javax.ws.rs.core.Response;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ApplicationFacade {
@@ -43,7 +46,9 @@ public class ApplicationFacade {
         final ApplicationFullResponse application = applicationService.getLatestApplication(user.getId());
         final OrganizationResponse organization = organizationService.getByOrganizationId(application.getOrganization().getId());
         application.setOrganization(organization);
-        offerService.getOfferByApplicationId(application.getId()).ifPresent(application::setOffer);
+        if (Objects.nonNull(application.getOffer())) {
+            offerService.getOfferById(application.getOffer().getId()).ifPresent(application::setOffer);
+        }
         return Response.ok(application).build();
     }
 
@@ -58,7 +63,13 @@ public class ApplicationFacade {
     }
 
     private void cancelOldApplicationAndOffer(final String userId) {
-        final Optional<Long> optionalApplicationId = applicationService.cancelLatestApplication(userId);
-        optionalApplicationId.ifPresent(offerService::cancel);
+        final Optional<Application> optionalApplication = applicationService.cancelLatestApplication(userId);
+        if (!optionalApplication.isPresent()) {
+            return;
+        }
+        Offer offer = optionalApplication.get().getOffer();
+        if (Objects.nonNull(offer)) {
+            offerService.cancel(offer);
+        }
     }
 }

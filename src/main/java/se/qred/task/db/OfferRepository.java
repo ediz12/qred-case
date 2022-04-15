@@ -14,15 +14,14 @@ import java.util.Optional;
 
 public class OfferRepository extends AbstractDAO<Offer> {
 
-    private final SessionFactory sessionFactory;
-
     public OfferRepository(SessionFactory sessionFactory) {
         super(sessionFactory);
-        this.sessionFactory = sessionFactory;
     }
 
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+    public Offer create(Offer offer) {
+        Long id = (Long) currentSession().save(offer);
+        offer.setId(id);
+        return offer;
     }
 
     public Offer save(Offer offer) {
@@ -41,7 +40,7 @@ public class OfferRepository extends AbstractDAO<Offer> {
         final CriteriaBuilder criteriaBuilder = currentSession().getCriteriaBuilder();
         final CriteriaQuery<Offer> criteriaQuery = criteriaQuery();
         final Root<Offer> root = criteriaQuery.from(Offer.class);
-        criteriaQuery.where(criteriaBuilder.equal(root.get("status"), OfferStatus.PENDING));
+        criteriaQuery.where(criteriaBuilder.equal(root.get("offerStatus"), OfferStatus.PENDING));
         return list(criteriaQuery);
     }
 }

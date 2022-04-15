@@ -14,15 +14,12 @@ import java.util.Optional;
 
 public class ApplicationRepository extends AbstractDAO<Application> {
 
-    private final SessionFactory sessionFactory;
-
     public ApplicationRepository(SessionFactory sessionFactory) {
         super(sessionFactory);
-        this.sessionFactory = sessionFactory;
     }
 
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+    public Application save(Application application) {
+        return persist(application);
     }
 
     public Optional<Application> findById(Long id) {
@@ -31,10 +28,6 @@ public class ApplicationRepository extends AbstractDAO<Application> {
             return Optional.empty();
         }
         return Optional.of(application);
-    }
-
-    public Application save(Application application) {
-        return persist(application);
     }
 
     public List<Application> findAllInApplicationIds(List<Long> expiredApplicationIds) {
@@ -52,6 +45,7 @@ public class ApplicationRepository extends AbstractDAO<Application> {
         final CriteriaQuery<Application> criteriaQuery = criteriaQuery();
         final Root<Application> root = criteriaQuery.from(Application.class);
         criteriaQuery.where(criteriaBuilder.equal(root.get("userId"), userId));
+        criteriaQuery.where(criteriaBuilder.equal(root.get("status"), ApplicationStatus.PENDING));
 
         final Application application = uniqueResult(currentSession().createQuery(criteriaQuery));
         if (Objects.isNull(application)) {

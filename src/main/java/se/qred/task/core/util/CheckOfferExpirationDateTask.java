@@ -1,5 +1,6 @@
 package se.qred.task.core.util;
 
+import io.dropwizard.hibernate.UnitOfWork;
 import org.joda.time.DateTime;
 import se.qred.task.db.dto.Application;
 import se.qred.task.db.dto.Offer;
@@ -21,22 +22,26 @@ public class CheckOfferExpirationDateTask extends TimerTask {
     }
 
     @Override
+    @UnitOfWork
     public void run() {
-        final List<Offer> offers = offerService.getOffersByPending();
-        if (offers.isEmpty()) {
-            return;
+        try {
+            final List<Offer> offers = offerService.getOffersByPending();
+            System.out.println(offers.size());
+            if (!offers.isEmpty()) {
+                final List<Offer> expiredOffers = offers.stream()
+                        .filter(offer -> offer.getExpirationDate().isBefore(DateTime.now()))
+                        .collect(Collectors.toList());
+
+                final List<Long> expiredApplicationIds = expiredOffers.stream()
+                        .map(Offer::getApplication)
+                        .map(Application::getId)
+                        .collect(Collectors.toList());
+
+                offerService.expireOffers(expiredOffers);
+                applicationService.cancelApplications(expiredApplicationIds);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
-
-        final List<Offer> expiredOffers = offers.stream()
-                .filter(offer -> offer.getExpirationDate().isAfter(DateTime.now()))
-                .collect(Collectors.toList());
-
-        final List<Long> expiredApplicationIds = offers.stream()
-                .map(Offer::getApplication)
-                .map(Application::getId)
-                .collect(Collectors.toList());
-
-        offerService.expireOffers(expiredOffers);
-        applicationService.cancelApplications(expiredApplicationIds);
     }
 }

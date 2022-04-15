@@ -26,8 +26,7 @@ public class Offer implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne()
-    @JoinColumn(name = "application_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "offer")
     private Application application;
 
     @Column(name = "amount")
@@ -49,7 +48,7 @@ public class Offer implements Serializable {
     private DateTime expirationDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "offer_status")
+    @Column(name = "status")
     private OfferStatus offerStatus;
 
     public Offer() {

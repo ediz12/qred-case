@@ -1,6 +1,7 @@
 package se.qred.task.resources;
 
 import io.dropwizard.auth.Auth;
+import io.dropwizard.hibernate.UnitOfWork;
 import se.qred.task.core.facade.ContractFacade;
 import se.qred.task.db.dto.User;
 
@@ -24,6 +25,7 @@ public class ContractResource {
 
     @GET
     @Path("/list")
+    @UnitOfWork
     public Response getContracts(@Auth final User user) {
         return contractFacade.getContractsByUser(user);
     }

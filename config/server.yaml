@@ -19,12 +19,9 @@ database:
     charSet: UTF-8
     hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate.hbm2ddl.auto: create
-    hibernate.show_sql: true
+    hibernate.show_sql: false
     hibernate.format_sql: true
 
-
-
-#
 #server:
 #  requestLog:
 #    appenders:
@@ -35,8 +32,8 @@ database:
 #          requestHeaders:
 #              - User-Agent
 #              - X-Request-Id
-##  softNofileLimit: 1000
-##  hardNofileLimit: 1000
+#  softNofileLimit: 1000
+#  hardNofileLimit: 1000
 #  applicationConnectors:
 #    - type: http
 #      port: 8080
@@ -56,22 +53,16 @@ database:
 #      port: 8444
 #      keyStorePath: example.keystore
 #      keyStorePassword: example
-#
-## Logging settings.
-#logging:
-#
-#  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-#  level: INFO
-#
-#  # Logger-specific levels.
-#  loggers:
-#
-#    # Sets the level for 'com.example.app' to DEBUG.
-#    com.example.app: DEBUG
-#
-#    # Redirects SQL logs to a separate file
-#    org.hibernate.SQL:
-#      level: DEBUG
+
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+  # Logger-specific levels.
+  loggers:
+    se.qred.task: INFO
+    # Redirects SQL logs to a separate file
+    org.hibernate.SQL:
+      level: INFO
 #
 ## Logback's Time Based Rolling Policy - archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}.log.gz
 ## Logback's Size and Time Based Rolling Policy -  archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz

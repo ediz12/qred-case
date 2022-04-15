@@ -6,6 +6,7 @@ import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.db.PooledDataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import se.qred.task.client.AllabolagClient;
@@ -20,6 +21,7 @@ import se.qred.task.core.mapper.request.ContractRequestMapper;
 import se.qred.task.core.mapper.response.ContractResponseMapper;
 import se.qred.task.core.mapper.response.OfferResponseMapper;
 import se.qred.task.core.mapper.response.OrganizationResponseMapper;
+import se.qred.task.core.service.checks.ExecutorHealthCheck;
 import se.qred.task.db.ApplicationRepository;
 import se.qred.task.db.ContractRepository;
 import se.qred.task.db.OfferRepository;
@@ -42,6 +44,7 @@ import se.qred.task.resources.ContractResource;
 import javax.ws.rs.client.Client;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Main extends io.dropwizard.Application<MainConfiguration> {
@@ -63,6 +66,7 @@ public class Main extends io.dropwizard.Application<MainConfiguration> {
     @Override
     public void run(MainConfiguration configuration,
                     Environment environment) {
+        // TODO check dependency injection properly
 
         // Repositories
         final ApplicationRepository applicationRepository = new ApplicationRepository(hibernateBundle.getSessionFactory());
@@ -98,7 +102,7 @@ public class Main extends io.dropwizard.Application<MainConfiguration> {
 
         // Facades
         final ApplicationFacade applicationFacade = new ApplicationFacade(applicationService, organizationService, offerService, allabolagClient);
-        final OfferFacade offerFacade = new OfferFacade(applicationService, offerService, contractService);
+        final OfferFacade offerFacade = new OfferFacade(applicationService, organizationService, offerService, contractService);
         final ContractFacade contractFacade = new ContractFacade(contractService, organizationService);
 
         // Resources
@@ -109,10 +113,16 @@ public class Main extends io.dropwizard.Application<MainConfiguration> {
         environment.jersey().register(contractResource);
 
         // Util
+        CheckOfferExpirationDateTask task = new UnitOfWorkAwareProxyFactory(hibernateBundle)
+                .create(CheckOfferExpirationDateTask.class, new Class[]{ApplicationService.class, OfferService.class}, new Object[]{applicationService, offerService});
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(new CheckOfferExpirationDateTask(applicationService, offerService), 15, 60, TimeUnit.SECONDS);
+
+        // Health
+        final ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(task, 15, 60, TimeUnit.SECONDS);
+        environment.healthChecks().register("executor_health", new ExecutorHealthCheck(scheduledFuture));
 
         // Authentication
+        // TODO move to database
         environment.jersey().register(new AuthDynamicFeature(
                 new BasicCredentialAuthFilter.Builder<User>()
                         .setAuthenticator(new SimpleAuthenticator(userRepository))
