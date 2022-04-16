@@ -56,12 +56,12 @@ public class OfferFacade {
         return Response.accepted(negotiatedOffer).build();
     }
 
-    public Response negotiateOfferByManager(User user, String applicationId, OfferNegotiateManagerRequest offerRequest) {
+    public Response negotiateOfferByManager(User user, Long applicationId, OfferNegotiateManagerRequest offerRequest) {
         if (!user.isAccountManager()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        Application application = applicationService.getApplicationById(Long.parseLong(applicationId));
+        Application application = applicationService.getApplicationById(applicationId);
 
         final OfferFullResponse negotiatedOffer = offerService.negotiate(application.getOffer().getId(), offerRequest);
         // TODO Negotiate history

@@ -3,12 +3,10 @@ package se.qred.task.db.dto;
 import org.joda.time.DateTime;
 import se.qred.task.core.model.enums.ApplicationStatus;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -62,6 +60,7 @@ public class Application implements Serializable {
         this.id = build.id;
         this.userId = build.userId;
         this.organization = build.organization;
+        this.offer = build.offer;
         this.email = build.email;
         this.phoneNumber = build.phoneNumber;
         this.amount = build.amount;
@@ -74,6 +73,7 @@ public class Application implements Serializable {
         private Long id;
         private String userId;
         private Organization organization;
+        private Offer offer;
         private String email;
         private String phoneNumber;
         private Integer amount;
@@ -92,6 +92,11 @@ public class Application implements Serializable {
 
         public Builder organization(Organization organization) {
             this.organization = organization;
+            return this;
+        }
+
+        public Builder offer(Offer offer) {
+            this.offer = offer;
             return this;
         }
 

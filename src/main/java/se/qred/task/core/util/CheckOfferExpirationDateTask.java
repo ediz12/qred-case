@@ -26,7 +26,6 @@ public class CheckOfferExpirationDateTask extends TimerTask {
     public void run() {
         try {
             final List<Offer> offers = offerService.getOffersByPending();
-            System.out.println(offers.size());
             if (!offers.isEmpty()) {
                 final List<Offer> expiredOffers = offers.stream()
                         .filter(offer -> offer.getExpirationDate().isBefore(DateTime.now()))
@@ -41,7 +40,7 @@ public class CheckOfferExpirationDateTask extends TimerTask {
                 applicationService.cancelApplications(expiredApplicationIds);
             }
         } catch (Throwable t) {
-            t.printStackTrace();
+            t.printStackTrace(); // TODO switch to logger
         }
     }
 }

@@ -66,7 +66,7 @@ public class ApplicationResource {
     @Path("/{applicationId}/offer/negotiate")
     @UnitOfWork
     public Response negotiateApplicationOffer(@Auth final User user, @PathParam("applicationId") String applicationId, @Valid final OfferNegotiateManagerRequest offerRequest) {
-        return offerFacade.negotiateOfferByManager(user, applicationId, offerRequest);
+        return offerFacade.negotiateOfferByManager(user, Long.parseLong(applicationId), offerRequest);
     }
 
     @PUT
