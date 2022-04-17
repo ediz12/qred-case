@@ -56,10 +56,10 @@ database:
 
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: DEBUG
+  level: INFO
   # Logger-specific levels.
   loggers:
-    se.qred.task: DEBUG
+    se.qred.task: INFO
     # Redirects SQL logs to a separate file
     org.hibernate.SQL:
       level: INFO
