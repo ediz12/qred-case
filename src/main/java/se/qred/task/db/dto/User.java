@@ -41,4 +41,14 @@ public class User implements Principal {
     public boolean isAccountManager() {
         return UserType.ACCOUNT_MANAGER.equals(this.userType);
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", userType=" + userType +
+                '}';
+    }
 }

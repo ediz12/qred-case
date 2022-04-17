@@ -2,6 +2,8 @@ package se.qred.task.resources;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.qred.task.api.request.ApplicationApplyRequest;
 import se.qred.task.api.request.OfferCreateRequest;
 import se.qred.task.api.request.OfferNegotiateManagerRequest;
@@ -26,6 +28,7 @@ import javax.ws.rs.core.Response;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ApplicationResource {
 
+    private static final Logger logger  = LoggerFactory.getLogger(ApplicationResource.class);
     private final ApplicationFacade applicationFacade;
     private final OfferFacade offerFacade;
 
@@ -38,6 +41,7 @@ public class ApplicationResource {
     @Path("/apply")
     @UnitOfWork
     public Response createApplication(@Auth final User user, @Valid final ApplicationApplyRequest applicationApplyRequest) {
+        logger.debug(String.format("Create Application: User: %s, ApplyRequest: %s", user, applicationApplyRequest));
         return applicationFacade.createApplication(user, applicationApplyRequest);
     }
 
@@ -45,6 +49,7 @@ public class ApplicationResource {
     @Path("/latest")
     @UnitOfWork
     public Response getLatestApplication(@Auth final User user) {
+        logger.debug(String.format("Get Latest Application: User: %s", user));
         return applicationFacade.getLatestApplicationByUser(user);
     }
 
@@ -52,6 +57,7 @@ public class ApplicationResource {
     @Path("/{applicationId}/offer")
     @UnitOfWork
     public Response createApplicationOffer(@Auth final User user, @PathParam("applicationId") String applicationId, @Valid final OfferCreateRequest offerCreateRequest) {
+        logger.debug(String.format("Create Application Offer: User: %s, applicationId: %s, Create request: %s", user, applicationId, offerCreateRequest));
         return offerFacade.createOffer(user, Long.parseLong(applicationId), offerCreateRequest);
     }
 
@@ -59,6 +65,7 @@ public class ApplicationResource {
     @Path("/latest/offer/negotiate")
     @UnitOfWork
     public Response negotiateLatestApplicationOffer(@Auth final User user, @Valid final OfferNegotiateUserRequest offerRequest) {
+        logger.debug(String.format("Negotiate User Offer: User: %s, Negotiate Request: %s", user, offerRequest));
         return offerFacade.negotiateLatestOfferByUser(user, offerRequest);
     }
 
@@ -66,6 +73,7 @@ public class ApplicationResource {
     @Path("/{applicationId}/offer/negotiate")
     @UnitOfWork
     public Response negotiateApplicationOffer(@Auth final User user, @PathParam("applicationId") String applicationId, @Valid final OfferNegotiateManagerRequest offerRequest) {
+        logger.debug(String.format("Negotiate Manager Offer: User: %s, Application Id: %s, Negotiate Request: %s", user, applicationId, offerRequest));
         return offerFacade.negotiateOfferByManager(user, Long.parseLong(applicationId), offerRequest);
     }
 
@@ -73,6 +81,7 @@ public class ApplicationResource {
     @Path("/latest/offer/sign")
     @UnitOfWork
     public Response signLatestApplicationOffer(@Auth final User user) {
+        logger.debug(String.format("Sign Latest Application Offer: User: %s", user));
         return offerFacade.signLatestOffer(user);
     }
 }
