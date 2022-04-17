@@ -51,7 +51,7 @@ public class ContractResourceTest extends BaseMockitoTest {
         assertEquals("Statuses are OK", expectedResponse.getStatus(), response.getStatus());
 
         List<ContractResponse> responseEntity = (List<ContractResponse>) response.getEntity();
-        assertEquals("There is one item", responseEntity.size(), 1);
+        assertEquals("There is one item", 1, responseEntity.size());
         final ContractResponse firstContract = responseEntity.get(0);
         final ContractResponse expectedFirstContract = contracts.get(0);
         assertEquals("Contract ID is 1", firstContract.getId(), Long.valueOf(1L));

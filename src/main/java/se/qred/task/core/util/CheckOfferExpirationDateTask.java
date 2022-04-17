@@ -39,8 +39,8 @@ public class CheckOfferExpirationDateTask extends TimerTask {
                 offerService.expireOffers(expiredOffers);
                 applicationService.cancelApplications(expiredApplicationIds);
             }
-        } catch (Throwable t) {
-            t.printStackTrace(); // TODO switch to logger
+        } catch (Exception e) {
+            e.printStackTrace(); // TODO switch to logger
         }
     }
 }

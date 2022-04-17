@@ -7,20 +7,24 @@ import org.junit.Test;
 import org.mockito.Mock;
 import se.qred.task.api.request.ApplicationApplyRequest;
 import se.qred.task.api.response.ApplicationApplyResponse;
+import se.qred.task.api.response.ApplicationFullResponse;
 import se.qred.task.base.BaseMockitoTest;
 import se.qred.task.base.model.db.MockApplication;
 import se.qred.task.base.model.db.MockOffer;
 import se.qred.task.base.model.db.MockOrganization;
 import se.qred.task.base.model.request.MockApplicationApplyRequest;
 import se.qred.task.base.model.response.MockApplicationApplyResponse;
+import se.qred.task.base.model.response.MockApplicationFullResponse;
 import se.qred.task.core.mapper.request.ApplicationRequestMapper;
 import se.qred.task.core.mapper.response.ApplicationResponseMapper;
+import se.qred.task.core.model.ApplicationPair;
 import se.qred.task.core.model.enums.ApplicationStatus;
 import se.qred.task.db.ApplicationRepository;
 import se.qred.task.db.dto.Application;
 import se.qred.task.db.dto.Offer;
 import se.qred.task.db.dto.Organization;
 
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -212,14 +216,123 @@ public class ApplicationServiceTest extends BaseMockitoTest {
     }
 
     @Test
-    public void signLatestApplication() {
+    public void whenPendingApplicationExists_thenSignApplication() {
+        // Given
+        final String userId = "1";
+        final Application initialApplication = MockApplication.simplePendingApplicationWithOffer();
+        final Optional<Application> initialOptional = Optional.of(initialApplication);
+        final Application expectedApplication = MockApplication.simpleSignedApplication();
+        final ApplicationFullResponse expectedResponse = MockApplicationFullResponse.simpleFullResponseWithOffer();
+        final ApplicationPair expectedPair = new ApplicationPair(expectedApplication, expectedResponse);
+
+        // When
+        when(applicationRepository.findByUserIdAndStatusIsPending(userId)).thenReturn(initialOptional);
+        when(applicationRepository.save(initialApplication)).thenReturn(expectedApplication);
+        when(applicationResponseMapper.mapFull(initialApplication)).thenReturn(expectedResponse);
+
+        // Then
+        final ApplicationPair pair = applicationService.signLatestApplication(userId);
+        verify(applicationRepository).findByUserIdAndStatusIsPending(userId);
+        verify(applicationRepository).save(initialApplication);
+        verify(applicationResponseMapper).mapFull(initialApplication);
+        verifyNoMoreInteractions(applicationRepository, applicationResponseMapper);
+        verifyNoInteractions(applicationRequestMapper);
+
+        assertEquals(ApplicationStatus.SIGNED, pair.getApplication().getStatus());
+        assertEquals(expectedPair.getApplication().getId(), pair.getApplication().getId());
+        assertEquals(expectedPair.getApplicationResponse().getId(), pair.getApplicationResponse().getId());
+        // TODO do proper asserts without object match
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void whenPendingApplicationDoesNotExist_thenSignApplicationThrowError() {
+        // Given
+        final String userId = "1";
+
+        // When
+        doThrow(NotFoundException.class).when(applicationRepository).findByUserIdAndStatusIsPending(userId);
+
+        // Then
+        final ApplicationPair applicationPair = applicationService.signLatestApplication(userId);
+        verify(applicationRepository).findByUserIdAndStatusIsPending(userId);
+        verifyNoMoreInteractions(applicationRepository);
+        verifyNoInteractions(applicationRequestMapper, applicationResponseMapper);
     }
 
     @Test
-    public void getLatestApplication() {
+    public void whenGetLatestApplicationExists_thenReturnLatestApplicationFullResponse() {
+        // Given
+        final String userId = "1";
+        final Application expectedApplication = MockApplication.simpleProcessedApplication();
+        final Optional<Application> expectedOptional = Optional.of(expectedApplication);
+        final ApplicationFullResponse expectedResponse = MockApplicationFullResponse.simpleFullResponse();
+
+        // When
+        when(applicationRepository.findByUserIdAndStatusIn(userId, Lists.newArrayList(ApplicationStatus.PENDING, ApplicationStatus.PROCESSED))).thenReturn(expectedOptional);
+        when(applicationResponseMapper.mapFull(expectedApplication)).thenReturn(expectedResponse);
+
+        // Then
+        final ApplicationFullResponse response = applicationService.getLatestApplication(userId);
+        verify(applicationRepository).findByUserIdAndStatusIn(userId, Lists.newArrayList(ApplicationStatus.PENDING, ApplicationStatus.PROCESSED));
+        verify(applicationResponseMapper).mapFull(expectedApplication);
+        verifyNoMoreInteractions(applicationRepository, applicationResponseMapper);
+        verifyNoInteractions(applicationRequestMapper);
+
+        assertEquals(expectedResponse.getId(), response.getId());
+        assertEquals(expectedResponse.getAmount(), response.getAmount());
+        // TODO fill other asserts
+
+
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void whenGetLatestApplicationNotExists_thenLatestApplicationThrowError() {
+        // Given
+        final String userId = "1";
+
+        // When
+        doThrow(NotFoundException.class).when(applicationRepository).findByUserIdAndStatusIn(userId, Lists.newArrayList(ApplicationStatus.PENDING, ApplicationStatus.PROCESSED));
+
+        // Then
+        final ApplicationFullResponse latestApplication = applicationService.getLatestApplication(userId);
+        verify(applicationRepository).findByUserIdAndStatusIn(userId, Lists.newArrayList(ApplicationStatus.PENDING, ApplicationStatus.PROCESSED));
+        verifyNoMoreInteractions(applicationRepository);
+        verifyNoInteractions(applicationRequestMapper, applicationResponseMapper);
     }
 
     @Test
-    public void getApplicationById() {
+    public void whenApplicationExists_thenGetApplicationById() {
+        // Given
+        final Long applicationId = 1L;
+        final Application expectedApplication = MockApplication.simpleProcessedApplication();
+        final Optional<Application> expectedOptional = Optional.of(expectedApplication);
+
+        // When
+        when(applicationRepository.findById(applicationId)).thenReturn(expectedOptional);
+
+        // Then
+        final Application application = applicationService.getApplicationById(applicationId);
+        verify(applicationRepository).findById(applicationId);
+        verifyNoMoreInteractions(applicationRepository);
+        verifyNoInteractions(applicationRequestMapper, applicationResponseMapper);
+
+        assertEquals(expectedApplication.getId(), application.getId());
+        assertEquals(expectedApplication.getAmount(), application.getAmount());
+        // TODO fill other asserts
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void whenApplicationNotExists_thenGetApplicationByIdThrowError() {
+        // Given
+        final Long applicationId = 2L;
+
+        // When
+        doThrow(NotFoundException.class).when(applicationRepository).findById(applicationId);
+
+        // Then
+        final Application application = applicationService.getApplicationById(applicationId);
+        verify(applicationRepository).findById(applicationId);
+        verifyNoMoreInteractions(applicationRepository);
+        verifyNoInteractions(applicationRequestMapper, applicationResponseMapper);
     }
 }

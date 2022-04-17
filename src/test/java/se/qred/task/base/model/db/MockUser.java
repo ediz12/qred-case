@@ -13,6 +13,10 @@ public class MockUser {
         return new User("1", "fay", "1234", UserType.NORMAL);
     }
 
+    public static User simpleUserWithWrongPassword() {
+        return new User("1", "fay", "abcd", UserType.NORMAL);
+    }
+
     public static User simpleManager() {
         return new User("2", "kayle", "4321", UserType.ACCOUNT_MANAGER);
     }

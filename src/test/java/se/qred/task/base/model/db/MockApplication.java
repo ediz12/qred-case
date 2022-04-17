@@ -55,7 +55,7 @@ public class MockApplication {
                 .build();
     }
 
-    public static Application simpleCancelledApplication() {
+    public static Application simpleSignedApplication() {
         return new Application.Builder()
                 .id(1L)
                 .userId("1")
@@ -63,7 +63,7 @@ public class MockApplication {
                 .email("test@test.com")
                 .phoneNumber("+1234567890")
                 .organization(MockOrganization.getSimpleOrganization())
-                .status(ApplicationStatus.CANCELLED)
+                .status(ApplicationStatus.SIGNED)
                 .appliedDate(new DateTime())
                 .build();
     }

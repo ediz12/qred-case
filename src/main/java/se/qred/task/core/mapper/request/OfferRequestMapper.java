@@ -4,9 +4,8 @@ import org.joda.time.DateTime;
 import se.qred.task.api.request.OfferCreateRequest;
 import se.qred.task.api.request.OfferNegotiateManagerRequest;
 import se.qred.task.api.request.OfferNegotiateUserRequest;
-import se.qred.task.db.dto.Application;
-import se.qred.task.db.dto.Offer;
 import se.qred.task.core.model.enums.OfferStatus;
+import se.qred.task.db.dto.Offer;
 
 
 public class OfferRequestMapper {

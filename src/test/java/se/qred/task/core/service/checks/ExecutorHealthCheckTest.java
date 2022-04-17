@@ -43,7 +43,7 @@ public class ExecutorHealthCheckTest extends BaseMockitoTest {
         verifyNoMoreInteractions(executorTask);
 
         assertTrue(check.isHealthy());
-        assertEquals(check.getMessage(), "Contracts expire when time has passed");
+        assertEquals("Contracts expire when time has passed", check.getMessage());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ExecutorHealthCheckTest extends BaseMockitoTest {
         verifyNoMoreInteractions(executorTask);
 
         assertFalse(check.isHealthy());
-        assertEquals(check.getMessage(), "Task has stopped running, contracts are not expiring");
+        assertEquals("Task has stopped running, contracts are not expiring", check.getMessage());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class ExecutorHealthCheckTest extends BaseMockitoTest {
         verifyNoMoreInteractions(executorTask);
 
         assertFalse(check.isHealthy());
-        assertEquals(check.getMessage(), "Task has stopped running, contracts are not expiring");
+        assertEquals("Task has stopped running, contracts are not expiring", check.getMessage());
     }
 
     @Test
@@ -93,6 +93,6 @@ public class ExecutorHealthCheckTest extends BaseMockitoTest {
         verifyNoMoreInteractions(executorTask);
 
         assertFalse(check.isHealthy());
-        assertEquals(check.getMessage(), "Task has stopped running, contracts are not expiring");
+        assertEquals("Task has stopped running, contracts are not expiring", check.getMessage());
     }
 }

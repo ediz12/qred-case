@@ -78,7 +78,7 @@ public class CheckOfferExpirationDateTaskTest extends BaseMockitoTest {
         verifyNoMoreInteractions(applicationService, offerService);
     }
 
-    @Test(expected = Throwable.class)
+    @Test(expected = Exception.class)
     public void whenThereIsError_ThenCatchError() {
         // Given
         final List<Offer> offers = MockOffer.getOffersWithExpires();
@@ -88,18 +88,18 @@ public class CheckOfferExpirationDateTaskTest extends BaseMockitoTest {
 
         // Then
 
-        Throwable throwable = null;
+        Exception exception = null;
 
         try {
             task.run();
-        } catch (Throwable t) {
-            throwable = t;
+        } catch (Exception t) {
+            exception = t;
             t.printStackTrace();
         }
 
         verify(offerService).getOffersByPending();
         verifyNoMoreInteractions(offerService);
         verifyNoInteractions(applicationService);
-        assertNotNull(throwable);
+        assertNotNull(exception);
     }
 }
