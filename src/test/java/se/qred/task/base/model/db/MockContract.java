@@ -1,7 +1,10 @@
 package se.qred.task.base.model.db;
 
+import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 import se.qred.task.db.dto.Contract;
+
+import java.util.List;
 
 public class MockContract {
 
@@ -34,5 +37,9 @@ public class MockContract {
                 .totalCommission(10000.0)
                 .organization(MockOrganization.getSimpleOrganization())
                 .build();
+    }
+
+    public static List<Contract> getSimpleContracts() {
+        return Lists.newArrayList(getSimpleContract(), getSimpleContract());
     }
 }

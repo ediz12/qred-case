@@ -42,6 +42,10 @@ public class MockContractResponse {
                 .build();
     }
 
+    public static List<ContractResponse> contractResponsesWithOrganization() {
+        return Lists.newArrayList(simpleContractWithOrganization(), simpleContractWithOrganization());
+    }
+
     public static List<ContractResponse> simpleContracts() {
         return Lists.newArrayList(simpleContract());
     }

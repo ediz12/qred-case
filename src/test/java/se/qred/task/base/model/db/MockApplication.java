@@ -1,9 +1,12 @@
 package se.qred.task.base.model.db;
 
+import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 import se.qred.task.core.model.enums.ApplicationStatus;
 import se.qred.task.db.dto.Application;
 import se.qred.task.db.dto.Offer;
+
+import java.util.List;
 
 public class MockApplication {
 
@@ -47,8 +50,25 @@ public class MockApplication {
                 .offer(new Offer.Builder()
                         .id(1L)
                         .build())
-                .status(ApplicationStatus.PROCESSED)
+                .status(ApplicationStatus.PENDING)
                 .appliedDate(new DateTime())
                 .build();
+    }
+
+    public static Application simpleCancelledApplication() {
+        return new Application.Builder()
+                .id(1L)
+                .userId("1")
+                .amount(10000)
+                .email("test@test.com")
+                .phoneNumber("+1234567890")
+                .organization(MockOrganization.getSimpleOrganization())
+                .status(ApplicationStatus.CANCELLED)
+                .appliedDate(new DateTime())
+                .build();
+    }
+
+    public static List<Application> pendingApplications() {
+        return Lists.newArrayList(simplePendingApplicationWithOffer());
     }
 }
