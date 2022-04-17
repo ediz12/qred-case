@@ -1,5 +1,6 @@
 package se.qred.task.core.facade;
 
+import io.dropwizard.jersey.errors.ErrorMessage;
 import se.qred.task.api.request.OfferCreateRequest;
 import se.qred.task.api.request.OfferNegotiateManagerRequest;
 import se.qred.task.api.request.OfferNegotiateUserRequest;
@@ -8,6 +9,7 @@ import se.qred.task.api.response.OfferCreateResponse;
 import se.qred.task.api.response.OfferFullResponse;
 import se.qred.task.core.model.ApplicationPair;
 import se.qred.task.core.model.OfferPair;
+import se.qred.task.core.model.exceptions.OfferAlreadyNegotiatedException;
 import se.qred.task.core.service.ApplicationService;
 import se.qred.task.core.service.ContractService;
 import se.qred.task.core.service.OfferService;
@@ -34,11 +36,15 @@ public class OfferFacade {
 
     public Response createOffer(User user, Long applicationId, OfferCreateRequest offerCreateRequest) {
         if (!user.isAccountManager()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(new ErrorMessage(Response.Status.UNAUTHORIZED.getStatusCode(), "User is not a manager!"))
+                    .build();
         }
 
         if (!applicationService.isProcessedApplication(applicationId)) {
-            return Response.status(Response.Status.CONFLICT).build();
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ErrorMessage(Response.Status.CONFLICT.getStatusCode(), "This application does not exist or is already processed!"))
+                    .build();
         }
 
         final Application application = applicationService.getApplicationById(applicationId);
@@ -51,21 +57,35 @@ public class OfferFacade {
 
     public Response negotiateLatestOfferByUser(User user, OfferNegotiateUserRequest offerRequest) {
         final ApplicationFullResponse latestApplication = applicationService.getLatestApplication(user.getId());
-        final OfferFullResponse negotiatedOffer = offerService.negotiate(latestApplication.getOffer().getId(), offerRequest);
+        try {
+            final OfferFullResponse negotiatedOffer = offerService.negotiate(latestApplication.getOffer().getId(), offerRequest);
+            return Response.accepted(negotiatedOffer).build();
+        } catch (OfferAlreadyNegotiatedException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ErrorMessage(Response.Status.CONFLICT.getStatusCode(), "Offer is already negotiated by the user!"))
+                    .build();
+        }
         // TODO Negotiate history
-        return Response.accepted(negotiatedOffer).build();
     }
 
     public Response negotiateOfferByManager(User user, Long applicationId, OfferNegotiateManagerRequest offerRequest) {
         if (!user.isAccountManager()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(new ErrorMessage(Response.Status.UNAUTHORIZED.getStatusCode(), "User is not a manager!"))
+                    .build();
         }
 
         Application application = applicationService.getApplicationById(applicationId);
 
-        final OfferFullResponse negotiatedOffer = offerService.negotiate(application.getOffer().getId(), offerRequest);
+        try {
+            final OfferFullResponse negotiatedOffer = offerService.negotiate(application.getOffer().getId(), offerRequest);
+            return Response.accepted(negotiatedOffer).build();
+        } catch (OfferAlreadyNegotiatedException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ErrorMessage(Response.Status.CONFLICT.getStatusCode(), "Offer is already negotiated by the manager!"))
+                    .build();
+        }
         // TODO Negotiate history
-        return Response.accepted(negotiatedOffer).build();
     }
 
     public Response signLatestOffer(User user) {

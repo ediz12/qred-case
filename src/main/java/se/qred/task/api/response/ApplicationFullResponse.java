@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
 import se.qred.task.core.model.enums.ApplicationStatus;
 
-public class ApplicationFullResponse {
+public class  ApplicationFullResponse {
 
     @JsonProperty
     private Long id;

@@ -1,5 +1,6 @@
 package se.qred.task.core.facade;
 
+import io.dropwizard.jersey.errors.ErrorMessage;
 import se.qred.task.api.request.ApplicationApplyRequest;
 import se.qred.task.api.response.ApplicationApplyResponse;
 import se.qred.task.api.response.ApplicationFullResponse;
@@ -7,6 +8,7 @@ import se.qred.task.api.response.OrganizationResponse;
 import se.qred.task.client.AllabolagClient;
 import se.qred.task.client.model.AllabolagOrganizationDetailResponse;
 import se.qred.task.core.model.OrganizationPair;
+import se.qred.task.core.model.exceptions.AllabolagUnreachableException;
 import se.qred.task.core.service.ApplicationService;
 import se.qred.task.core.service.OfferService;
 import se.qred.task.core.service.OrganizationService;
@@ -33,8 +35,13 @@ public class ApplicationFacade {
     }
 
     public Response createApplication(final User user, final ApplicationApplyRequest applyRequest) {
-        final OrganizationPair organizationPair = getOrganizationPair(applyRequest.getOrganizationNumber());
-
+        final Optional<OrganizationPair> optionalPair = getOrganizationPair(applyRequest.getOrganizationNumber());
+        if (!optionalPair.isPresent()) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ErrorMessage(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Allabolag API is not reachable"))
+                    .build();
+        }
+        final OrganizationPair organizationPair = optionalPair.get();
         cancelOldApplicationAndOffer(user.getId());
         final ApplicationApplyResponse applicationApplyResponse = applicationService.create(applyRequest, organizationPair.getOrganization(), user.getId());
         applicationApplyResponse.setOrganization(organizationPair.getOrganizationResponse());
@@ -52,14 +59,21 @@ public class ApplicationFacade {
         return Response.ok(application).build();
     }
 
-    private OrganizationPair getOrganizationPair(String organizationNumber) {
+    private Optional<OrganizationPair> getOrganizationPair(String organizationNumber) {
         final Optional<OrganizationPair> optionalOrganization = organizationService.getByOrganizationNumber(organizationNumber);
-        return optionalOrganization.orElseGet(() -> createOrganization(organizationNumber));
+        if (optionalOrganization.isPresent()) {
+            return optionalOrganization;
+        }
+        return createOrganization(organizationNumber);
     }
 
-    private OrganizationPair createOrganization(final String organizationNumber) {
-        final AllabolagOrganizationDetailResponse allabolagOrganizationResponse = allabolagClient.getOrganizationDetails(organizationNumber);
-        return organizationService.create(allabolagOrganizationResponse);
+    private Optional<OrganizationPair> createOrganization(final String organizationNumber) {
+        try {
+            final AllabolagOrganizationDetailResponse allabolagOrganizationResponse = allabolagClient.getOrganizationDetails(organizationNumber);
+            return Optional.of(organizationService.create(allabolagOrganizationResponse));
+        } catch (AllabolagUnreachableException e) {
+            return Optional.empty();
+        }
     }
 
     private void cancelOldApplicationAndOffer(final String userId) {

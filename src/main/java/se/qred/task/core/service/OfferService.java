@@ -7,6 +7,7 @@ import se.qred.task.api.response.OfferFullResponse;
 import se.qred.task.core.mapper.request.OfferRequestMapper;
 import se.qred.task.core.mapper.response.OfferResponseMapper;
 import se.qred.task.core.model.OfferPair;
+import se.qred.task.core.model.exceptions.OfferAlreadyNegotiatedException;
 import se.qred.task.db.OfferRepository;
 import se.qred.task.db.dto.Offer;
 import se.qred.task.core.model.enums.OfferStatus;
@@ -33,11 +34,11 @@ public class OfferService {
         return new OfferPair(savedOffer, offerResponseMapper.map(savedOffer));
     }
 
-    public OfferFullResponse negotiate(Long id, OfferNegotiateUserRequest negotiateRequest) {
+    public OfferFullResponse negotiate(Long id, OfferNegotiateUserRequest negotiateRequest) throws OfferAlreadyNegotiatedException {
         Offer offer = offerRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
         if (!OfferStatus.PENDING.equals(offer.getOfferStatus())) {
-            throw new RuntimeException(); // TODO Custom exception conflict response
+            throw new OfferAlreadyNegotiatedException();
         }
 
         offer = offerRequestMapper.map(negotiateRequest, offer);
@@ -45,11 +46,11 @@ public class OfferService {
         return offerResponseMapper.mapFull(offer);
     }
 
-    public OfferFullResponse negotiate(Long id, OfferNegotiateManagerRequest negotiateRequest) {
+    public OfferFullResponse negotiate(Long id, OfferNegotiateManagerRequest negotiateRequest) throws OfferAlreadyNegotiatedException {
         Offer offer = offerRepository.findById(id)
                 .orElseThrow(NotFoundException::new);
         if (!OfferStatus.NEGOTIATED.equals(offer.getOfferStatus())) {
-            throw new RuntimeException(); // TODO Custom exception conflict response
+            throw new OfferAlreadyNegotiatedException();
         }
 
         offer = offerRequestMapper.map(negotiateRequest, offer);

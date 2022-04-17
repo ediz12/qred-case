@@ -1,7 +1,10 @@
 package se.qred.task.client;
 
+import org.apache.http.conn.ConnectTimeoutException;
 import se.qred.task.client.model.AllabolagOrganizationDetailResponse;
+import se.qred.task.core.model.exceptions.AllabolagUnreachableException;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
 
@@ -17,12 +20,15 @@ public class AllabolagClient {
         this.client = client;
     }
 
-    public AllabolagOrganizationDetailResponse getOrganizationDetails(String organizationNumber) {
-        // TODO: exception handling?
-        return client
-                .target(BASE_URL)
-                .path(ORGANIZATION_DETAILS_URL.replace(ORGANIZATION_NUMBER_PLACEHOLDER, organizationNumber))
-                .request(MediaType.APPLICATION_JSON)
+    public AllabolagOrganizationDetailResponse getOrganizationDetails(String organizationNumber) throws AllabolagUnreachableException {
+        try {
+            return client
+                    .target(BASE_URL)
+                    .path(ORGANIZATION_DETAILS_URL.replace(ORGANIZATION_NUMBER_PLACEHOLDER, organizationNumber))
+                    .request(MediaType.APPLICATION_JSON)
                 .get(AllabolagOrganizationDetailResponse.class);
+        } catch (ProcessingException e) {
+            throw new AllabolagUnreachableException("Allabolag server is not up and running!");
+        }
     }
 }
